@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Xget Hub · 开发者资源加速引擎</title>
+    <meta name="description" content="Xget 开发者资源加速 — URL 转换、配置生成、实例测速，支持 80+ 平台。">
+    <!-- Bootstrap 5 + Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        /* ===== Design Tokens ===== */
+        :root {
+            --xget-deep: #0b1c2f;
+            --xget-primary: #1e6f9f;
+            --xget-accent: #00b0aa;
+            --xget-light: #f8faff;
+            --xget-bg: #f4f7fc;
+            --xget-border: rgba(0,0,0,0.05);
+            --xget-radius: 20px;
+            --xget-radius-sm: 16px;
+            --xget-radius-pill: 40px;
+            --xget-shadow: 0 8px 20px rgba(0,0,0,0.02), 0 2px 6px rgba(0,20,40,0.05);
+            --xget-transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        /* ===== Base ===== */
+        body {
+            background: var(--xget-bg);
+            font-family: system-ui, 'Segoe UI', 'Helvetica Neue', sans-serif;
+        }
+
+        /* ===== Navbar ===== */
+        .navbar-brand {
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--xget-deep) !important;
+        }
+        .navbar-brand i { color: var(--xget-accent); margin-right: 6px; }
+
+        /* ===== Cards ===== */
+        .card {
+            border: none;
+            box-shadow: var(--xget-shadow);
+            border-radius: var(--xget-radius);
+            transition: var(--xget-transition);
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(2px);
+        }
+        .card-header {
+            background: transparent;
+            border-bottom: 1px solid var(--xget-border);
+            font-weight: 600;
+            padding: 1.2rem 1.5rem 0.8rem;
+            font-size: 1.2rem;
+        }
+
+        /* ===== Buttons ===== */
+        .btn-xget {
+            background: var(--xget-deep);
+            color: white;
+            border-radius: var(--xget-radius-pill);
+            padding: 0.5rem 1.8rem;
+            font-weight: 500;
+            border: 1px solid #1e3a5f;
+        }
+        .btn-xget:hover { background: #1a334b; color: white; }
+        .btn-outline-xget {
+            border: 1px solid var(--xget-primary);
+            color: var(--xget-primary);
+            border-radius: var(--xget-radius-pill);
+            padding: 0.4rem 1.5rem;
+        }
+        .btn-outline-xget:hover { background: var(--xget-primary); color: white; }
+
+        /* ===== Pills & Tabs ===== */
+        .nav-pills .nav-link {
+            border-radius: 30px;
+            padding: 0.6rem 1.4rem;
+            color: #1e293b;
+            font-weight: 500;
+            transition: var(--xget-transition);
+        }
+        .nav-pills .nav-link.active { background: var(--xget-deep); color: white; }
+
+        /* ===== Instance badge ===== */
+        .instance-badge {
+            background: #e9f2fa;
+            color: #0b1c2f;
+            padding: 0.25rem 1rem;
+            border-radius: var(--xget-radius-pill);
+            font-size: 0.85rem;
+        }
+
+        /* ===== Form controls ===== */
+        .platform-selector {
+            border-radius: var(--xget-radius-pill);
+            padding: 0.6rem 1rem;
+            border: 1px solid #dee2e6;
+        }
+        .converted-url {
+            background: #f2f6fd;
+            border-radius: var(--xget-radius-pill);
+            padding: 0.7rem 1.2rem;
+            font-family: 'SF Mono', 'Menlo', 'Cascadia Code', monospace;
+            border: 1px solid #d9e2ef;
+            word-break: break-all;
+            min-height: 2.6rem;
+            display: flex;
+            align-items: center;
+        }
+        .copy-btn {
+            border-radius: 30px;
+            padding: 0.3rem 1.2rem;
+            transition: var(--xget-transition);
+        }
+
+        /* ===== Code blocks ===== */
+        pre {
+            background: #0d1b26;
+            color: #d6eaff;
+            padding: 1rem;
+            border-radius: var(--xget-radius-sm);
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* ===== Table ===== */
+        .instance-table td { vertical-align: middle; }
+
+        /* ===== Ping indicators ===== */
+        .ping-success { color: #0f7b4e; }
+        .ping-fail { color: #bc1c1c; }
+
+        /* ===== Tab panes ===== */
+        .tab-pane { padding-top: 0.5rem; }
+
+        /* ===== Footer ===== */
+        .footer-note { color: #6c7a8a; font-size: 0.9rem; }
+
+        /* ===== Hover lift ===== */
+        .hover-lift {
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .hover-lift:hover { transform: translateY(-2px); }
+
+        /* ===== Toast container ===== */
+        .toast-container {
+            z-index: 1090;
+        }
+
+        /* ===== Spinner for buttons ===== */
+        .btn-loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        .btn-loading .btn-text { display: none; }
+        .btn-loading .btn-spinner { display: inline-block; }
+        .btn-spinner { display: none; }
+
+        /* ===== Responsive fixes ===== */
+        @media (max-width: 767.98px) {
+            .navbar-brand span { display: none; }
+            .navbar-brand .badge { display: none; }
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+<!-- ===== Toast container for notifications ===== -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" aria-live="polite" aria-atomic="true">
+    <div id="liveToast" class="toast align-items-center text-bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMessage"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="关闭"></button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Navbar ===== -->
+<nav class="navbar navbar-expand-lg py-3 px-2 px-md-4 bg-white border-bottom shadow-sm">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="#">
+            <i class="bi bi-rocket-takeoff fs-3 me-1"></i>
+            <span>Xget Hub</span>
+            <span class="badge bg-light text-dark ms-2 px-3 py-1 rounded-pill fw-normal">开发者加速引擎</span>
+        </a>
+        <div class="d-flex align-items-center gap-2 ms-auto">
+            <div class="instance-badge d-flex align-items-center" id="currentInstanceDisplay" title="当前实例">
+                <i class="bi bi-cloud-check me-1"></i>
+                <span id="currentInstanceName">官方演示 (xget.xi-xu.me)</span>
+            </div>
+            <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-toggle="offcanvas" data-bs-target="#instanceSettingsCanvas" title="管理 Xget 实例">
+                <i class="bi bi-gear-wide-connected"></i> 实例设置
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- ===== Main content ===== -->
+<div class="container-fluid flex-grow-1 py-4">
+    <div class="row g-4">
+        <!-- Sidebar navigation -->
+        <div class="col-md-3 col-lg-2">
+            <div class="card p-2 sticky-top" style="top: 20px;">
+                <div class="card-body p-2">
+                    <nav class="nav nav-pills flex-column gap-1" id="mainTabs" role="tablist" aria-label="主导航">
+                        <button class="nav-link active" id="converter-tab" data-bs-toggle="pill" data-bs-target="#converterPane" type="button" role="tab" aria-controls="converterPane" aria-selected="true">
+                            <i class="bi bi-arrow-left-right me-2"></i>URL 转换器
+                        </button>
+                        <button class="nav-link" id="config-tab" data-bs-toggle="pill" data-bs-target="#configPane" type="button" role="tab" aria-controls="configPane" aria-selected="false">
+                            <i class="bi bi-terminal me-2"></i>配置生成器
+                        </button>
+                        <button class="nav-link" id="diagnose-tab" data-bs-toggle="pill" data-bs-target="#diagnosePane" type="button" role="tab" aria-controls="diagnosePane" aria-selected="false">
+                            <i class="bi bi-speedometer2 me-2"></i>测速·诊断
+                        </button>
+                    </nav>
+                    <hr class="my-3">
+                    <div class="small text-secondary px-2">
+                        <i class="bi bi-database"></i> 内置映射: 80+ 平台 · GitHub · npm · PyPI · Docker · OpenAI 等
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content area -->
+        <div class="col-md-9 col-lg-10">
+            <div class="tab-content" id="mainTabContent">
+
+                <!-- Panel 1: URL Converter -->
+                <div class="tab-pane fade show active" id="converterPane" role="tabpanel" aria-labelledby="converter-tab">
+                    <div class="card">
+                        <div class="card-header d-flex align-items-center">
+                            <i class="bi bi-link-45deg fs-4 me-2" style="color: var(--xget-accent);"></i>
+                            智能 URL 转换 · 一键生成加速链接
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row g-4">
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold" for="originalUrlInput">原始 URL</label>
+                                    <input type="text" class="form-control form-control-lg rounded-4" id="originalUrlInput"
+                                           placeholder="粘贴原始 URL，例如 https://github.com/user/repo/releases/download/v1.0/file.zip"
+                                           autocomplete="url" spellcheck="false">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold" for="platformSelect">平台</label>
+                                    <select class="form-select platform-selector" id="platformSelect" aria-label="选择平台">
+                                        <!-- JS populated -->
+                                    </select>
+                                    <div class="form-text"><i class="bi bi-magic"></i> 自动识别域名，也可手动选择</div>
+                                </div>
+                                <div class="col-md-6 d-flex align-items-end">
+                                    <button type="button" class="btn btn-xget w-100 py-2" id="convertBtn">
+                                        <span class="btn-text"><i class="bi bi-arrow-repeat me-1"></i> 转换</span>
+                                        <span class="btn-spinner"><span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>转换中</span>
+                                    </button>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold mt-2">Xget 加速链接</label>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="converted-url flex-grow-1" id="convertedUrlOutput">
+                                            <span class="text-secondary">请输入 URL 查看转换结果</span>
+                                        </div>
+                                        <button type="button" class="btn btn-light border copy-btn" id="copyConvertedBtn" title="复制链接" disabled>
+                                            <i class="bi bi-clipboard"></i>
+                                        </button>
+                                    </div>
+                                    <div class="mt-2 small text-secondary">
+                                        <i class="bi bi-cloud-arrow-down"></i> 使用当前实例: <strong id="instanceHint">xget.xi-xu.me</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr class="my-4">
+                            <div class="bg-light p-3 rounded-4">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="bi bi-cpu"></i><span class="fw-semibold">快速命令</span>
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <button type="button" class="btn btn-outline-secondary rounded-pill w-100 text-start copy-cmd" data-cmd="wget">
+                                            <i class="bi bi-download"></i> wget 命令
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <button type="button" class="btn btn-outline-secondary rounded-pill w-100 text-start copy-cmd" data-cmd="curl">
+                                            <i class="bi bi-terminal"></i> curl 命令
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel 2: Config Generator -->
+                <div class="tab-pane fade" id="configPane" role="tabpanel" aria-labelledby="config-tab">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-file-code me-2" style="color: #1e6f9f;"></i>
+                            一键生成工具配置 · 适配 Xget 实例
+                        </div>
+                        <div class="card-body p-4">
+                            <nav>
+                                <ul class="nav nav-tabs mb-3" id="configTabs" role="tablist" aria-label="工具配置类型">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="tab-git" data-bs-toggle="tab" data-bs-target="#gitConfig" type="button" role="tab" aria-controls="gitConfig" aria-selected="true">Git</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="tab-pip" data-bs-toggle="tab" data-bs-target="#pipConfig" type="button" role="tab" aria-controls="pipConfig" aria-selected="false">pip / PyPI</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="tab-npm" data-bs-toggle="tab" data-bs-target="#npmConfig" type="button" role="tab" aria-controls="npmConfig" aria-selected="false">npm / Bun</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="tab-docker" data-bs-toggle="tab" data-bs-target="#dockerConfig" type="button" role="tab" aria-controls="dockerConfig" aria-selected="false">Docker</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="tab-conda" data-bs-toggle="tab" data-bs-target="#condaConfig" type="button" role="tab" aria-controls="condaConfig" aria-selected="false">Conda</button>
+                                    </li>
+                                </ul>
+                            </nav>
+                            <div class="tab-content" id="configTabContent">
+                                <div class="tab-pane fade show active" id="gitConfig" role="tabpanel" aria-labelledby="tab-git">
+                                    <p class="text-secondary">全局 Git 替换规则 (insteadOf)</p>
+                                    <pre id="gitConfigCode"></pre>
+                                    <button type="button" class="btn btn-sm btn-outline-primary copy-pre" data-target="gitConfigCode"><i class="bi bi-files"></i> 复制</button>
+                                </div>
+                                <div class="tab-pane fade" id="pipConfig" role="tabpanel" aria-labelledby="tab-pip">
+                                    <pre id="pipConfigCode"></pre>
+                                    <button type="button" class="btn btn-sm btn-outline-primary copy-pre" data-target="pipConfigCode"><i class="bi bi-files"></i> 复制</button>
+                                </div>
+                                <div class="tab-pane fade" id="npmConfig" role="tabpanel" aria-labelledby="tab-npm">
+                                    <pre id="npmConfigCode"></pre>
+                                    <button type="button" class="btn btn-sm btn-outline-primary copy-pre" data-target="npmConfigCode"><i class="bi bi-files"></i> 复制</button>
+                                </div>
+                                <div class="tab-pane fade" id="dockerConfig" role="tabpanel" aria-labelledby="tab-docker">
+                                    <pre id="dockerConfigCode"></pre>
+                                    <button type="button" class="btn btn-sm btn-outline-primary copy-pre" data-target="dockerConfigCode"><i class="bi bi-files"></i> 复制</button>
+                                </div>
+                                <div class="tab-pane fade" id="condaConfig" role="tabpanel" aria-labelledby="tab-conda">
+                                    <pre id="condaConfigCode"></pre>
+                                    <button type="button" class="btn btn-sm btn-outline-primary copy-pre" data-target="condaConfigCode"><i class="bi bi-files"></i> 复制</button>
+                                </div>
+                            </div>
+                            <div class="mt-4 p-3 bg-light rounded-4">
+                                <i class="bi bi-info-circle"></i> 所有配置已自动使用当前实例域名，您可以在"实例设置"中切换。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel 3: Diagnostics -->
+                <div class="tab-pane fade" id="diagnosePane" role="tabpanel" aria-labelledby="diagnose-tab">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-activity me-2"></i>连接诊断 & 模拟测速
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <label class="fw-semibold" for="testInstanceUrl">测试实例连接</label>
+                                    <div class="d-flex gap-2 mt-2">
+                                        <input type="text" class="form-control rounded-pill" id="testInstanceUrl" placeholder="xget.xi-xu.me" value="xget.xi-xu.me">
+                                        <button type="button" class="btn btn-outline-xget" id="pingTestBtn">
+                                            <span class="btn-text"><i class="bi bi-wifi"></i> Ping</span>
+                                            <span class="btn-spinner"><span class="spinner-border spinner-border-sm" aria-hidden="true"></span></span>
+                                        </button>
+                                    </div>
+                                    <div id="pingResult" class="mt-3 small"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="fw-semibold" for="speedTestFileSelect">模拟大文件测速 (生成链接)</label>
+                                    <select class="form-select rounded-pill mt-2" id="speedTestFileSelect" aria-label="测速文件">
+                                        <option value="gh/microsoft/vscode/archive/refs/heads/main.zip">VS Code (main.zip)</option>
+                                        <option value="hf/microsoft/DialoGPT-medium/resolve/main/pytorch_model.bin">HuggingFace 模型</option>
+                                        <option value="apache/kafka/3.6.1/kafka_2.13-3.6.1.tgz">Apache Kafka</option>
+                                    </select>
+                                    <div class="mt-3">
+                                        <div class="converted-url small" id="speedTestUrl"></div>
+                                    </div>
+                                    <button type="button" class="btn btn-light border mt-2 copy-btn" id="copySpeedUrl" title="复制测速链接">
+                                        <i class="bi bi-clipboard"></i> 复制测速链接
+                                    </button>
+                                    <p class="mt-2 text-secondary small">
+                                        <i class="bi bi-info-circle"></i> 使用 aria2 / wget 测试实际速度。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Footer ===== -->
+<footer class="mt-auto bg-white border-top py-3">
+    <div class="container-fluid d-flex justify-content-between footer-note">
+        <span>⚡ Xget Hub · 基于 Xget 文档设计 · 纯静态前端</span>
+        <span>
+            <a href="#" class="text-decoration-none text-secondary" data-bs-toggle="offcanvas" data-bs-target="#instanceSettingsCanvas">管理实例</a>
+             · 遵循 AGPL-3.0
+        </span>
+    </div>
+</footer>
+
+<!-- ===== Offcanvas: Instance Manager ===== -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="instanceSettingsCanvas" aria-labelledby="instanceSettingsTitle">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="instanceSettingsTitle"><i class="bi bi-clouds me-2"></i>Xget 实例管理</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="关闭"></button>
+    </div>
+    <div class="offcanvas-body">
+        <p class="text-secondary">添加自定义 Xget 实例 (如自建 Workers/Pages)，切换默认后端。</p>
+        <div class="mb-3">
+            <label class="form-label" for="newInstanceAlias">添加新实例</label>
+            <div class="input-group mb-2">
+                <input type="text" class="form-control" placeholder="别名 (如 官方)" id="newInstanceAlias" value="我的实例">
+                <input type="text" class="form-control" placeholder="域名 (xget.example.com)" id="newInstanceUrl" aria-label="实例域名">
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="addInstanceBtn"><i class="bi bi-plus-circle"></i> 添加</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary ms-1" id="testNewInstanceBtn">
+                <span class="btn-text"><i class="bi bi-arrow-repeat"></i> 测试连接</span>
+                <span class="btn-spinner"><span class="spinner-border spinner-border-sm" aria-hidden="true"></span></span>
+            </button>
+        </div>
+        <hr>
+        <h6>已保存的实例</h6>
+        <div style="max-height: 300px; overflow-y: auto;">
+            <table class="table table-sm instance-table">
+                <thead><tr><th>别名</th><th>域名</th><th>默认</th><th>操作</th></tr></thead>
+                <tbody id="instanceTableBody">
+                    <!-- JS populated -->
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-3 alert alert-light small">
+            <i class="bi bi-database"></i> 数据保存在浏览器 localStorage。
+        </div>
+    </div>
+</div>
+
+<!-- ===== Scripts ===== -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(function(){
+    "use strict";
+
+    /* ===================================================================
+     *  Xget Hub — Core Application
+     *  Static dashboard for the Xget URL proxy accelerator (xixu-me/Xget)
+     *  Supports 80+ developer platforms, instance management, URL conversion
+     * =================================================================== */
+
+    // ── Constants ──────────────────────────────────────────────────────
+    const STORAGE_KEY = 'xget_instances_v2';
+    const DEFAULT_INSTANCES = [
+        { alias: '官方演示', url: 'xget.xi-xu.me', isDefault: true },
+        { alias: '本地测试', url: 'localhost:8787', isDefault: false }
+    ];
+    const DEBOUNCE_MS = 200;
+
+    // ── Platform Registry (aligned with xget docs) ─────────────────────
+    // Ordered by host specificity — longer/more-specific hosts first
+    const PLATFORM_REGISTRY = [
+        // ── Code Repositories ──
+        { name: "GitHub Gist",   prefix: "gist",     host: "gist.github.com" },
+        { name: "GitHub",        prefix: "gh",       host: "github.com",
+          pathRewrite: (path) => {
+              // Homebrew is under github.com/Homebrew → strip the prefix
+              if (/^\/Homebrew\//.test(path)) return { prefix: "homebrew", path: path.replace(/^\/Homebrew/, '') };
+              return null; // null = use default prefix
+          }},
+        { name: "GitLab",        prefix: "gl",       host: "gitlab.com" },
+        { name: "Gitea",         prefix: "gitea",    host: "gitea.com" },
+        { name: "Codeberg",      prefix: "codeberg", host: "codeberg.org" },
+        { name: "SourceForge",   prefix: "sf",       host: "sourceforge.net" },
+        { name: "AOSP",          prefix: "aosp",     host: "android.googlesource.com" },
+
+        // ── AI / ML Model Hosts ──
+        { name: "Hugging Face",  prefix: "hf",       host: "huggingface.co" },
+        { name: "Civitai",       prefix: "civitai",  host: "civitai.com" },
+
+        // ── Package Managers ──
+        { name: "npm",           prefix: "npm",      host: "registry.npmjs.org" },
+        { name: "PyPI",          prefix: "pypi",     host: "pypi.org" },
+        { name: "Conda",         prefix: "conda",    host: "repo.anaconda.com" },
+        { name: "Maven",         prefix: "maven",    host: "repo1.maven.org" },
+        { name: "Gradle",        prefix: "gradle",   host: "plugins.gradle.org" },
+        { name: "Homebrew",      prefix: "homebrew", host: "github.com",
+          pathRewrite: (path) => ({ prefix: "homebrew", path: path.replace(/^\/Homebrew/, '') }) },
+        { name: "RubyGems",      prefix: "rubygems", host: "rubygems.org" },
+        { name: "CRAN",          prefix: "cran",     host: "cran.r-project.org" },
+        { name: "Go Proxy",      prefix: "golang",   host: "proxy.golang.org" },
+        { name: "NuGet",         prefix: "nuget",    host: "api.nuget.org" },
+        { name: "Crates (Rust)", prefix: "crates",   host: "crates.io" },
+        { name: "Packagist",     prefix: "packagist",host: "repo.packagist.org" },
+        { name: "Flathub",       prefix: "flathub",  host: "dl.flathub.org" },
+
+        // ── Container Registries (prefix: cr/...) ──
+        { name: "Docker Hub",    prefix: "cr/docker", host: "registry-1.docker.io",
+          pathRewrite: (path) => path.replace(/^\/v2\//, "/") },
+        { name: "Quay.io",       prefix: "cr/quay",   host: "quay.io" },
+        { name: "GCR",           prefix: "cr/gcr",    host: "gcr.io" },
+        { name: "GHCR",          prefix: "cr/ghcr",   host: "ghcr.io" },
+
+        // ── AI Inference Providers (prefix: ip/...) ──
+        { name: "OpenAI",        prefix: "ip/openai",    host: "api.openai.com" },
+        { name: "Anthropic",     prefix: "ip/anthropic", host: "api.anthropic.com" },
+        { name: "Gemini",        prefix: "ip/gemini",    host: "generativelanguage.googleapis.com" },
+        { name: "Cohere",        prefix: "ip/cohere",    host: "api.cohere.ai" },
+        { name: "Mistral",       prefix: "ip/mistralai", host: "api.mistral.ai" },
+        { name: "Groq",          prefix: "ip/groq",      host: "api.groq.com" },
+        { name: "Together",      prefix: "ip/together",  host: "api.together.xyz" },
+        { name: "OpenRouter",    prefix: "ip/openrouter",host: "api.openrouter.ai" },
+        { name: "Perplexity",    prefix: "ip/perplexity",host: "api.perplexity.ai" },
+        { name: "xAI",           prefix: "ip/xai",       host: "api.x.ai" },
+        { name: "Replicate",     prefix: "ip/replicate", host: "api.replicate.com" },
+        { name: "HuggingFace Inf",prefix:"ip/huggingface",host:"api-inference.huggingface.co" },
+
+        // ── Apache / Foundation Downloads ──
+        { name: "Apache",        prefix: "apache",   host: "downloads.apache.org" },
+
+        // ── Linux Distros ──
+        { name: "Debian",        prefix: "debian",   host: "deb.debian.org" },
+        { name: "Ubuntu",        prefix: "ubuntu",   host: "archive.ubuntu.com" },
+        { name: "Fedora",        prefix: "fedora",   host: "dl.fedoraproject.org" },
+        { name: "Rocky Linux",   prefix: "rocky",    host: "download.rockylinux.org" },
+        { name: "openSUSE",      prefix: "opensuse", host: "download.opensuse.org" },
+        { name: "Arch Linux",    prefix: "arch",     host: "geo.mirror.pkgbuild.com" },
+
+        // ── Other ──
+        { name: "arXiv",         prefix: "arxiv",    host: "arxiv.org" },
+        { name: "F-Droid",       prefix: "fdroid",   host: "f-droid.org" },
+        { name: "Jenkins",       prefix: "jenkins",  host: "updates.jenkins.io" },
+    ];
+
+    // Build lookup: host → platforms (sorted by host length desc for specificity)
+    const HOST_LOOKUP = new Map();
+    PLATFORM_REGISTRY.forEach((p, i) => {
+        if (p.pathRewrite) return; // skip auto-detect for path-dependent entries (handled in detection)
+        if (!HOST_LOOKUP.has(p.host)) HOST_LOOKUP.set(p.host, []);
+        HOST_LOOKUP.get(p.host).push(p);
+    });
+
+    // ── State ──────────────────────────────────────────────────────────
+    let instances = [];
+    let currentInstanceUrl = 'xget.xi-xu.me';
+    let debounceTimer = null;
+
+    // ── Bootstrap Toast instance ───────────────────────────────────────
+    let toastInstance = null;
+    function getToast() {
+        if (!toastInstance) {
+            const el = document.getElementById('liveToast');
+            toastInstance = new bootstrap.Toast(el, { delay: 2500 });
+        }
+        return toastInstance;
+    }
+    function showToast(message) {
+        document.getElementById('toastMessage').textContent = message;
+        getToast().show();
+    }
+
+    // ── Clipboard (with fallback) ──────────────────────────────────────
+    function copyToClipboard(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            return navigator.clipboard.writeText(text).then(() => true).catch(() => false);
+        }
+        // Fallback for older browsers / non-HTTPS
+        return new Promise((resolve) => {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            ta.style.top = '-9999px';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            try {
+                document.execCommand('copy');
+                resolve(true);
+            } catch (e) {
+                resolve(false);
+            } finally {
+                document.body.removeChild(ta);
+            }
+        });
+    }
+    async function copyAndNotify(text, label) {
+        const ok = await copyToClipboard(text);
+        showToast(ok ? `已复制${label ? ': ' + label : ''}` : '复制失败，请手动复制');
+    }
+
+    // ── Loading state helpers ──────────────────────────────────────────
+    function setButtonLoading(btn, loading) {
+        if (loading) {
+            btn.classList.add('btn-loading');
+            btn.disabled = true;
+        } else {
+            btn.classList.remove('btn-loading');
+            btn.disabled = false;
+        }
+    }
+
+    // ── Persistence ────────────────────────────────────────────────────
+    function loadInstances() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            instances = raw ? JSON.parse(raw) : null;
+        } catch (e) { instances = null; }
+        if (!instances || !instances.length) {
+            instances = JSON.parse(JSON.stringify(DEFAULT_INSTANCES));
+        }
+        // Ensure at least one default
+        if (!instances.some(i => i.isDefault) && instances.length) {
+            instances[0].isDefault = true;
+        }
+        const def = instances.find(i => i.isDefault);
+        currentInstanceUrl = def ? def.url : instances[0].url;
+        refreshAllUI();
+    }
+
+    function saveInstances() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(instances)); } catch(e) {}
+    }
+
+    // ── Instance Manager ───────────────────────────────────────────────
+    function setDefaultInstance(index) {
+        instances.forEach((inst, i) => inst.isDefault = (i === index));
+        currentInstanceUrl = instances[index].url;
+        saveInstances();
+        refreshAllUI();
+    }
+
+    function deleteInstance(index) {
+        if (instances.length <= 1) { showToast('至少保留一个实例'); return; }
+        const wasDefault = instances[index].isDefault;
+        instances.splice(index, 1);
+        if (wasDefault) {
+            instances[0].isDefault = true;
+            currentInstanceUrl = instances[0].url;
+        }
+        saveInstances();
+        refreshAllUI();
+    }
+
+    function addInstance(alias, url) {
+        alias = alias.trim();
+        url = url.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+        if (!alias || !url) { showToast('请填写别名和域名'); return false; }
+        // Basic validation
+        if (!/^[\w.-]+(\.[\w.-]+)*(:\d+)?$/.test(url)) {
+            showToast('域名格式无效，请输入类似 xget.example.com 的格式');
+            return false;
+        }
+        // Duplicate check
+        if (instances.some(i => i.url === url)) {
+            showToast('该实例已存在');
+            return false;
+        }
+        instances.push({ alias, url, isDefault: false });
+        saveInstances();
+        // Clear inputs
+        document.getElementById('newInstanceAlias').value = '';
+        document.getElementById('newInstanceUrl').value = '';
+        refreshAllUI();
+        showToast(`已添加实例: ${alias}`);
+        return true;
+    }
+
+    // ── URL Converter ──────────────────────────────────────────────────
+    function detectPlatform(urlStr) {
+        try {
+            const url = new URL(urlStr);
+            const host = url.hostname.replace(/^www\./, '');
+            const path = url.pathname;
+
+            // First pass: check path-dependent entries
+            // GitHub → Homebrew: path starts with /Homebrew/
+            if (host === 'github.com' && /^\/Homebrew\//.test(path)) {
+                const hb = PLATFORM_REGISTRY.find(p => p.name === 'Homebrew');
+                if (hb) return hb;
+            }
+
+            // Second pass: host lookup (exact match)
+            if (HOST_LOOKUP.has(host)) {
+                const candidates = HOST_LOOKUP.get(host);
+                return candidates[0]; // first registered for this host
+            }
+
+            // Third pass: subdomain match (most-specific first)
+            // e.g. "s3.amazonaws.com" should match before "amazonaws.com"
+            const sorted = PLATFORM_REGISTRY
+                .filter(p => !p.pathRewrite && host.endsWith('.' + p.host))
+                .sort((a, b) => b.host.length - a.host.length);
+            if (sorted.length) return sorted[0];
+        } catch (e) { /* invalid URL */ }
+        return null;
+    }
+
+    function convertUrl() {
+        const input = document.getElementById('originalUrlInput').value.trim();
+        const outputEl = document.getElementById('convertedUrlOutput');
+        const copyBtn = document.getElementById('copyConvertedBtn');
+
+        if (!input) {
+            outputEl.innerHTML = '<span class="text-secondary">请输入 URL 查看转换结果</span>';
+            copyBtn.disabled = true;
+            return '';
+        }
+
+        const platformPrefix = document.getElementById('platformSelect').value;
+        // Auto-detect if any platform selected
+        let effectivePrefix = platformPrefix;
+        let effectivePath = '';
+
+        try {
+            const urlObj = new URL(input);
+            effectivePath = urlObj.pathname + urlObj.search + urlObj.hash;
+        } catch (e) {
+            // Not a valid URL — treat as raw path
+            effectivePath = input.replace(/^https?:\/\/[^/]+/, '');
+            if (!effectivePath.startsWith('/')) effectivePath = '/' + effectivePath;
+        }
+
+        // Only apply pathRewrite when the detected platform matches
+        // the currently selected prefix (don't override manual user selection)
+        const detected = detectPlatform(input);
+        if (detected && detected.pathRewrite && effectivePrefix === detected.prefix) {
+            const rewrite = detected.pathRewrite(effectivePath);
+            if (rewrite) {
+                effectivePrefix = rewrite.prefix || effectivePrefix;
+                if (rewrite.path !== undefined) effectivePath = rewrite.path;
+            }
+        }
+
+        const converted = `https://${currentInstanceUrl}/${effectivePrefix}${effectivePath}`;
+        outputEl.textContent = converted;
+        copyBtn.disabled = false;
+        return converted;
+    }
+
+    // ── Config Snippets Generator ──────────────────────────────────────
+    const CONFIG_TEMPLATES = {
+        gitConfigCode: (inst) =>
+`git config --global url."https://${inst}/gh/".insteadOf "https://github.com/"
+git config --global url."https://${inst}/gl/".insteadOf "https://gitlab.com/"`,
+        pipConfigCode: (inst) =>
+`pip config set global.index-url https://${inst}/pypi/simple/
+pip config set global.trusted-host ${inst}`,
+        npmConfigCode: (inst) =>
+`npm config set registry https://${inst}/npm/
+# 或创建 .npmrc:
+registry=https://${inst}/npm/`,
+        dockerConfigCode: (inst) =>
+`# 拉取镜像示例
+docker pull ${inst}/cr/ghcr/nginxinc/nginx-unprivileged:latest
+# registry mirror 配置 (daemon.json)
+{
+  "registry-mirrors": ["https://${inst}/cr/docker"]
+}`,
+        condaConfigCode: (inst) =>
+`conda config --set channel_alias https://${inst}/conda/community
+conda config --add default_channels https://${inst}/conda/pkgs/main`
+    };
+
+    function updateConfigSnippets() {
+        const inst = currentInstanceUrl;
+        Object.entries(CONFIG_TEMPLATES).forEach(([id, template]) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = template(inst);
+        });
+    }
+
+    function updateSpeedTestUrl() {
+        const sel = document.getElementById('speedTestFileSelect');
+        const url = `https://${currentInstanceUrl}/${sel.value}`;
+        document.getElementById('speedTestUrl').textContent = url;
+    }
+
+    // ── Ping Service ───────────────────────────────────────────────────
+    async function pingInstance(rawUrl) {
+        const cleanUrl = rawUrl.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+        const fullUrl = `https://${cleanUrl}/`;
+        const start = Date.now();
+
+        // Strategy 1: Try CORS fetch (xget workers may set CORS headers)
+        try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 8000);
+            const resp = await fetch(fullUrl, {
+                method: 'HEAD',
+                mode: 'cors',
+                signal: controller.signal,
+                cache: 'no-cache'
+            });
+            clearTimeout(timeout);
+            const latency = Date.now() - start;
+            if (resp.ok) {
+                return { reachable: true, latency, method: 'HTTP HEAD' };
+            }
+            return { reachable: true, latency, method: `HTTP ${resp.status}` };
+        } catch (e) {
+            // CORS failed — fall back to image ping for reachability
+            if (e.name === 'AbortError') {
+                return { reachable: false, error: '连接超时 (8s)' };
+            }
+        }
+
+        // Strategy 2: Image ping (no CORS restriction)
+        try {
+            const latency = await new Promise((resolve, reject) => {
+                const img = new Image();
+                const t0 = Date.now();
+                const timeout = setTimeout(() => {
+                    img.src = '';
+                    reject(new Error('timeout'));
+                }, 8000);
+                img.onload = () => {
+                    clearTimeout(timeout);
+                    resolve(Date.now() - t0);
+                };
+                img.onerror = () => {
+                    clearTimeout(timeout);
+                    // onerror fires for non-image responses too —
+                    // the server is reachable if we get any response
+                    resolve(Date.now() - t0);
+                };
+                img.src = fullUrl + '?_ping=' + Date.now();
+            });
+            return { reachable: true, latency, method: 'Image (服务器可达)' };
+        } catch (e) {
+            return { reachable: false, error: '无法连接' };
+        }
+    }
+
+    // ── Platform Select Populator ──────────────────────────────────────
+    function populatePlatformSelect() {
+        const select = document.getElementById('platformSelect');
+        select.innerHTML = '';
+        PLATFORM_REGISTRY.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.prefix;
+            opt.textContent = `${p.name} (${p.prefix})`;
+            select.appendChild(opt);
+        });
+    }
+
+    // ── UI Refreshers ──────────────────────────────────────────────────
+    function refreshInstanceBadge() {
+        const def = instances.find(i => i.isDefault);
+        document.getElementById('currentInstanceName').textContent =
+            def ? `${def.alias} (${def.url})` : currentInstanceUrl;
+        document.getElementById('instanceHint').textContent = currentInstanceUrl;
+        document.getElementById('currentInstanceDisplay').title =
+            '当前实例: ' + currentInstanceUrl;
+    }
+
+    function renderInstanceTable() {
+        const tbody = document.getElementById('instanceTableBody');
+        tbody.innerHTML = instances.map((inst, idx) => `
+            <tr>
+                <td>${escapeHtml(inst.alias)}</td>
+                <td><code>${escapeHtml(inst.url)}</code></td>
+                <td>${inst.isDefault ? '<span class="badge bg-success">默认</span>' : ''}</td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-outline-secondary set-default-btn"
+                            data-action="set-default" data-index="${idx}"
+                            ${inst.isDefault ? 'disabled' : ''}>设为默认</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger delete-btn"
+                            data-action="delete" data-index="${idx}">删除</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function refreshAllUI() {
+        refreshInstanceBadge();
+        renderInstanceTable();
+        convertUrl();
+        updateConfigSnippets();
+        updateSpeedTestUrl();
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // ── Event Delegation (instance table) ──────────────────────────────
+    document.getElementById('instanceTableBody').addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        const action = btn.dataset.action;
+        const index = parseInt(btn.dataset.index, 10);
+        if (isNaN(index)) return;
+
+        switch (action) {
+            case 'set-default':
+                setDefaultInstance(index);
+                break;
+            case 'delete':
+                deleteInstance(index);
+                break;
+        }
+    });
+
+    // ── Event Bindings ─────────────────────────────────────────────────
+    function bindEvents() {
+        // URL input → auto-detect + convert (debounced)
+        const urlInput = document.getElementById('originalUrlInput');
+        urlInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const detected = detectPlatform(urlInput.value);
+                if (detected) {
+                    document.getElementById('platformSelect').value = detected.prefix;
+                }
+                convertUrl();
+            }, DEBOUNCE_MS);
+        });
+
+        // Platform select change → convert
+        document.getElementById('platformSelect').addEventListener('change', convertUrl);
+
+        // Convert button
+        document.getElementById('convertBtn').addEventListener('click', convertUrl);
+
+        // Copy converted URL
+        document.getElementById('copyConvertedBtn').addEventListener('click', () => {
+            const text = document.getElementById('convertedUrlOutput').textContent;
+            if (text) copyAndNotify(text, '加速链接');
+        });
+
+        // Copy wget/curl commands
+        document.querySelectorAll('.copy-cmd').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const url = document.getElementById('convertedUrlOutput').textContent;
+                if (!url || url.includes('请输入')) {
+                    showToast('请先输入 URL 并转换');
+                    return;
+                }
+                const cmd = btn.dataset.cmd === 'wget'
+                    ? `wget "${url}"`
+                    : `curl -L -O "${url}"`;
+                copyAndNotify(cmd, cmd.length > 50 ? cmd.substring(0, 50) + '...' : cmd);
+            });
+        });
+
+        // Copy config snippets
+        document.querySelectorAll('.copy-pre').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.dataset.target;
+                const text = document.getElementById(targetId)?.textContent;
+                if (text) copyAndNotify(text, '配置');
+            });
+        });
+
+        // Add instance
+        document.getElementById('addInstanceBtn').addEventListener('click', () => {
+            const alias = document.getElementById('newInstanceAlias').value;
+            const url = document.getElementById('newInstanceUrl').value;
+            addInstance(alias, url);
+        });
+
+        // Test new instance connection
+        document.getElementById('testNewInstanceBtn').addEventListener('click', async () => {
+            const url = document.getElementById('newInstanceUrl').value.trim();
+            if (!url) { showToast('请先填写实例域名'); return; }
+            const btn = document.getElementById('testNewInstanceBtn');
+            setButtonLoading(btn, true);
+            try {
+                const res = await pingInstance(url);
+                if (res.reachable) {
+                    showToast(`连接成功 · 延迟 ${res.latency}ms · ${res.method || ''}`);
+                } else {
+                    showToast(`连接失败: ${res.error}`);
+                }
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        });
+
+        // Ping test from diagnostics panel
+        document.getElementById('pingTestBtn').addEventListener('click', async () => {
+            const url = document.getElementById('testInstanceUrl').value.trim();
+            if (!url) return;
+            const btn = document.getElementById('pingTestBtn');
+            const resultDiv = document.getElementById('pingResult');
+            setButtonLoading(btn, true);
+            resultDiv.innerHTML = '<span class="text-secondary"><span class="spinner-border spinner-border-sm me-1"></span>检测中...</span>';
+            try {
+                const res = await pingInstance(url);
+                if (res.reachable) {
+                    resultDiv.innerHTML = `<span class="ping-success">
+                        <i class="bi bi-check-circle"></i> 可达 · 延迟 ${res.latency}ms · ${res.method || ''}
+                    </span>`;
+                } else {
+                    resultDiv.innerHTML = `<span class="ping-fail">
+                        <i class="bi bi-x-circle"></i> 不可达 · ${res.error || '未知错误'}
+                    </span>`;
+                }
+            } catch (e) {
+                resultDiv.innerHTML = `<span class="ping-fail">
+                    <i class="bi bi-x-circle"></i> 检测异常: ${e.message}
+                </span>`;
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        });
+
+        // Speed test file selector
+        document.getElementById('speedTestFileSelect').addEventListener('change', updateSpeedTestUrl);
+
+        // Copy speed test URL
+        document.getElementById('copySpeedUrl').addEventListener('click', () => {
+            const text = document.getElementById('speedTestUrl').textContent;
+            if (text) copyAndNotify(text, '测速链接');
+        });
+
+        // Allow Enter key on instance URL input to trigger add
+        document.getElementById('newInstanceUrl').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const alias = document.getElementById('newInstanceAlias').value;
+                const url = document.getElementById('newInstanceUrl').value;
+                addInstance(alias, url);
+            }
+        });
+    }
+
+    // ── Bootstrap ──────────────────────────────────────────────────────
+    function init() {
+        populatePlatformSelect();
+        loadInstances(); // calls refreshAllUI internally
+        bindEvents();
+        // No window.load listener needed — script runs at bottom of body
+        console.log('Xget Hub ready · ' + PLATFORM_REGISTRY.length + ' platforms · instance: ' + currentInstanceUrl);
+    }
+
+    init();
+})();
+</script>
+</body>
+</html>
