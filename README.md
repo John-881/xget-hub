@@ -24,6 +24,7 @@
 1. 直接在浏览器打开 `xget-ui.html`
 2. 粘贴原始 URL → 自动识别平台 → 生成 Xget 加速链接
 3. 通过侧栏「实例设置」管理自建 Xget 实例
+4. 在线体验：[https://xget-hub.490633.xyz/xget-hub.html](https://xget-hub.490633.xyz/xget-hub.html)
 
 无需构建工具、无需后端，零依赖运行（Bootstrap + Icons 从 CDN 加载）。
 
@@ -213,3 +214,11 @@ arXiv · F-Droid · Jenkins
 | CSS 自定义属性 | 49+ | 31+ | 9.1+ | 15+ |
 
 > 所有现代浏览器均支持。旧浏览器通过剪贴板 fallback 和 Image ping 回退正常工作。
+
+---
+
+## 开源协议
+
+本项目与 [Xget](https://github.com/xixu-me/Xget) 主仓库采用相同协议：[GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)](https://spdx.org/licenses/AGPL-3.0-or-later.html)。
+
+> AGPL-3.0 要求通过网络提供服务时也必须开源相关代码，弥补了 GPL 的"ASP 漏洞"。使用或二次开发本项目时请注意遵守协议条款。
